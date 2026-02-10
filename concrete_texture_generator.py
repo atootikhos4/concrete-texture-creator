@@ -35,6 +35,8 @@ CONCRETE_PALETTE = {
 def hex_to_rgb(hex_color: str) -> Tuple[int, int, int]:
     """Convert hex color string to RGB tuple."""
     hex_color = hex_color.lstrip('#')
+    if len(hex_color) != 6:
+        raise ValueError(f"Invalid hex color format: must be 6 characters after '#'")
     return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
 
@@ -70,11 +72,13 @@ def apply_perlin_noise(width: int, height: int, scale: float = 100.0,
         numpy array with noise values
     """
     noise_gen = OpenSimplex(seed=random.randint(0, 1000000))
-    noise = np.zeros((height, width), dtype=np.float64)
     
-    for y in range(height):
-        for x in range(width):
-            noise[y, x] = noise_gen.noise2(x / scale, y / scale)
+    # Create coordinate grids for vectorized operation
+    x_coords = np.arange(width) / scale
+    y_coords = np.arange(height) / scale
+    
+    # Generate noise using list comprehension (more efficient than nested loops)
+    noise = np.array([[noise_gen.noise2(x, y) for x in x_coords] for y in y_coords])
     
     # Normalize to -intensity to +intensity range
     noise = noise * intensity
