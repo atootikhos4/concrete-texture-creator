@@ -1,4 +1,5 @@
 Pillow>=10.0.0
 numpy>=1.24.0
 opensimplex>=0.4
+scipy>=1.10.0
 python-pptx>=0.6.21
