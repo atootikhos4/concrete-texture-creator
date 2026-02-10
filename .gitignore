@@ -39,6 +39,7 @@ env/
 test_*.png
 concrete_texture.png
 *.png
+*.jpg
 !Picture1.png
 !Picture2.jpg
 
