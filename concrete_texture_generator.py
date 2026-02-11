@@ -236,6 +236,9 @@ def apply_cracks(img_array, density=1.0, seed=None):
                 branch_length = random.randint(3, 10)
                 branch_angle = angle + random.uniform(-90, 90)
                 branch_x, branch_y = x, y
+                # Clamp starting position to valid bounds
+                branch_x = max(0, min(width - 1, branch_x))
+                branch_y = max(0, min(height - 1, branch_y))
                 branch_points = [(int(branch_x), int(branch_y))]
                 
                 for _ in range(branch_length):
@@ -581,6 +584,8 @@ Examples:
     # Texture parameters
     parser.add_argument('--roughness', type=float, default=1.0,
                        help='Overall grittiness/grain intensity (0.0-2.0, default: 1.0)')
+    parser.add_argument('--splatter', type=float, default=0.9,
+                       help='Knockdown splatter intensity (0.0-1.0, default: 0.9)')
     parser.add_argument('--pitting', type=float, default=1.0,
                        help='Density of pinholes (0.0-2.0, default: 1.0)')
     parser.add_argument('--cracks', type=float, default=1.0,
@@ -600,6 +605,10 @@ Examples:
     if not (0.0 <= args.roughness <= 2.0):
         print("Warning: roughness should be between 0.0 and 2.0, clamping...")
         args.roughness = max(0.0, min(2.0, args.roughness))
+    
+    if not (0.0 <= args.splatter <= 1.0):
+        print("Warning: splatter should be between 0.0 and 1.0, clamping...")
+        args.splatter = max(0.0, min(1.0, args.splatter))
     
     if not (0.0 <= args.pitting <= 2.0):
         print("Warning: pitting should be between 0.0 and 2.0, clamping...")
@@ -635,9 +644,9 @@ Examples:
     elif args.color:
         base_color = args.color
     else:
-        # Default to preset 6 (Classic Concrete)
-        base_color = CONCRETE_PALETTE[6]['color']
-        print(f"\nUsing default: {CONCRETE_PALETTE[6]['name']} ({base_color})\n")
+        # Default to preset 5 (Medium Grey)
+        base_color = CONCRETE_PALETTE[5]['color']
+        print(f"\nUsing default: {CONCRETE_PALETTE[5]['name']} ({base_color})\n")
     
     # Generate texture
     try:
@@ -648,6 +657,7 @@ Examples:
             roughness=args.roughness,
             pitting=args.pitting,
             cracks=args.cracks,
+            knockdown_intensity=args.splatter,
             seed=args.seed
         )
         
@@ -656,7 +666,7 @@ Examples:
         print(f"\n✓ Texture saved to: {args.output}")
         print(f"  Size: {args.width}x{args.height} pixels")
         print(f"  Base color: {base_color}")
-        print(f"  Roughness: {args.roughness:.1f}, Pitting: {args.pitting:.1f}, Cracks: {args.cracks:.1f}")
+        print(f"  Roughness: {args.roughness:.1f}, Splatter: {args.splatter:.1f}, Pitting: {args.pitting:.1f}, Cracks: {args.cracks:.1f}")
         
         return 0
     except Exception as e:
