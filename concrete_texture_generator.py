@@ -424,9 +424,9 @@ def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0
         base_color: RGB tuple or hex color string
         width: Image width in pixels
         height: Image height in pixels
-        roughness: Overall grittiness/grain intensity (0.0-1.0, default 1.0)
-        pitting: Density of pinholes (0.0-1.0, default 1.0)
-        cracks: Micro-crack density (0.0-1.0, default 1.0)
+        roughness: Overall grittiness/grain intensity (0.0-2.0, default 1.0)
+        pitting: Density of pinholes (0.0-2.0, default 1.0)
+        cracks: Micro-crack density (0.0-2.0, default 1.0)
         seed: Random seed for reproducibility
     
     Returns:
@@ -534,11 +534,11 @@ Examples:
     
     # Texture parameters
     parser.add_argument('--roughness', type=float, default=1.0,
-                       help='Overall grittiness/grain intensity (0.0-1.0, default: 1.0)')
+                       help='Overall grittiness/grain intensity (0.0-2.0, default: 1.0)')
     parser.add_argument('--pitting', type=float, default=1.0,
-                       help='Density of pinholes (0.0-1.0, default: 1.0)')
+                       help='Density of pinholes (0.0-2.0, default: 1.0)')
     parser.add_argument('--cracks', type=float, default=1.0,
-                       help='Micro-crack density (0.0-1.0, default: 1.0)')
+                       help='Micro-crack density (0.0-2.0, default: 1.0)')
     
     # Output
     parser.add_argument('--output', type=str, default='concrete_texture.png',

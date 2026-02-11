@@ -130,9 +130,9 @@ python concrete_texture_generator.py --random --seed 42 --output reproducible.pn
 --preset PRESET         Use preset color by number (1-12)
 --width WIDTH           Image width in pixels (default: 1024)
 --height HEIGHT         Image height in pixels (default: 1024)
---roughness ROUGHNESS   Overall grittiness/grain intensity (0.0-1.0, default: 1.0)
---pitting PITTING       Density of pinholes (0.0-1.0, default: 1.0)
---cracks CRACKS         Micro-crack density (0.0-1.0, default: 1.0)
+--roughness ROUGHNESS   Overall grittiness/grain intensity (0.0-2.0, default: 1.0)
+--pitting PITTING       Density of pinholes (0.0-2.0, default: 1.0)
+--cracks CRACKS         Micro-crack density (0.0-2.0, default: 1.0)
 --output OUTPUT         Output file path (default: concrete_texture.png)
 --seed SEED             Random seed for reproducibility
 ```
