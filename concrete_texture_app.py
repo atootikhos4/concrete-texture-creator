@@ -26,10 +26,10 @@ class ConcreteTextureApp:
         
         # Current parameters
         self.params = {
-            'color': '#8c8680',  # Default: Classic Concrete
+            'color': '#8c8680',  # Default: Medium Grey
             'roughness': 1.0,
-            'knockdown_intensity': 0.8,
-            'knockdown_scale': 2.5,
+            'knockdown_intensity': 0.9,  # Updated default
+            'knockdown_scale': 3.0,  # Updated default
             'pitting': 1.0,
             'pitting_size': 1.0,
             'aggregate_density': 1.0,
@@ -180,8 +180,8 @@ class ConcreteTextureApp:
         # Define slider configurations
         slider_configs = [
             ('roughness', 'Roughness / Grain Intensity', 0.0, 2.0, 1.0),
-            ('knockdown_intensity', 'Knockdown Splatter Intensity', 0.0, 1.0, 0.8),
-            ('knockdown_scale', 'Knockdown Splatter Scale', 1.0, 5.0, 2.5),
+            ('knockdown_intensity', 'Knockdown Splatter Intensity', 0.0, 1.0, 0.9),  # Updated default
+            ('knockdown_scale', 'Knockdown Splatter Scale', 1.0, 5.0, 3.0),  # Updated default
             ('pitting', 'Pitting Density', 0.0, 2.0, 1.0),
             ('pitting_size', 'Pitting Size', 0.5, 2.0, 1.0),
             ('aggregate_density', 'Aggregate Density', 0.0, 2.0, 1.0),
@@ -391,8 +391,8 @@ class ConcreteTextureApp:
         defaults = {
             'color': '#8c8680',
             'roughness': 1.0,
-            'knockdown_intensity': 0.8,
-            'knockdown_scale': 2.5,
+            'knockdown_intensity': 0.9,  # Updated default
+            'knockdown_scale': 3.0,  # Updated default
             'pitting': 1.0,
             'pitting_size': 1.0,
             'aggregate_density': 1.0,
