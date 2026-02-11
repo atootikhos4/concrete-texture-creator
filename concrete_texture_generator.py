@@ -416,7 +416,10 @@ def apply_dust_haze(img_array, patch_count=15, intensity=20, seed=None):
 
 
 def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0, 
-                            pitting=1.0, cracks=1.0, seed=None):
+                            pitting=1.0, cracks=1.0, seed=None,
+                            knockdown_intensity=0.8, knockdown_scale=2.5,
+                            pitting_size=1.0, aggregate_density=1.0,
+                            staining_intensity=1.0, noise_scale=1.0, verbose=True):
     """
     Generate a realistic spray-on concrete resurfacing texture with all imperfections.
     
@@ -428,6 +431,13 @@ def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0
         pitting: Density of pinholes (0.0-2.0, default 1.0)
         cracks: Micro-crack density (0.0-2.0, default 1.0)
         seed: Random seed for reproducibility
+        knockdown_intensity: Knockdown splatter intensity (0.0-1.0, default 0.8)
+        knockdown_scale: Knockdown splatter scale/blur (1.0-5.0, default 2.5)
+        pitting_size: Size multiplier for pitting (0.5-2.0, default 1.0)
+        aggregate_density: Density of aggregate particles (0.0-2.0, default 1.0)
+        staining_intensity: Intensity of surface staining (0.0-2.0, default 1.0)
+        noise_scale: Scale of Perlin noise (0.5-2.0, default 1.0)
+        verbose: Print progress messages (default True)
     
     Returns:
         PIL Image object
@@ -439,55 +449,70 @@ def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0
         random.seed(seed)
         np.random.seed(seed)
     
-    print(f"Generating {width}x{height} spray-on concrete texture...")
-    print(f"Base color: RGB{base_color} ({rgb_to_hex(base_color)})")
-    print(f"Parameters: roughness={roughness:.1f}, pitting={pitting:.1f}, cracks={cracks:.1f}")
+    if verbose:
+        print(f"Generating {width}x{height} spray-on concrete texture...")
+        print(f"Base color: RGB{base_color} ({rgb_to_hex(base_color)})")
+        print(f"Parameters: roughness={roughness:.1f}, pitting={pitting:.1f}, cracks={cracks:.1f}")
     
     # Step 1: Base color
-    print("  - Applying base color...")
+    if verbose:
+        print("  - Applying base color...")
     img_array = apply_base_color(width, height, base_color)
     
     # Step 2: Multi-octave Simplex noise (subtle undertone)
-    print("  - Adding multi-octave Perlin/Simplex noise...")
-    img_array = apply_simplex_noise(img_array, scale=0.01, intensity=12)
+    if verbose:
+        print("  - Adding multi-octave Perlin/Simplex noise...")
+    noise_scale_val = 0.01 * noise_scale
+    img_array = apply_simplex_noise(img_array, scale=noise_scale_val, intensity=12)
     
     # Step 3: KNOCKDOWN SPLATTER PATTERN - THE KEY LAYER
-    print("  - Adding knockdown splatter pattern (KEY LAYER)...")
-    img_array = apply_knockdown_splatter(img_array, intensity=0.8, blur_radius=2.5)
+    if verbose:
+        print("  - Adding knockdown splatter pattern (KEY LAYER)...")
+    img_array = apply_knockdown_splatter(img_array, intensity=knockdown_intensity, blur_radius=knockdown_scale)
     
     # Step 4: Heavy stipple/grain - make it HARSH and GRITTY
-    print("  - Adding heavy stipple/grain texture...")
+    if verbose:
+        print("  - Adding heavy stipple/grain texture...")
     stipple_intensity = int(18 * roughness)  # Scale by roughness parameter
     img_array = apply_heavy_stipple(img_array, intensity=stipple_intensity)
     
     # Step 5: Fine grain (additional layer for more texture)
-    print("  - Adding fine grain layer...")
+    if verbose:
+        print("  - Adding fine grain layer...")
     fine_intensity = int(10 * roughness)
     img_array = apply_fine_grain(img_array, intensity=fine_intensity)
     
     # Step 6: Pitting/pinholes - clearly visible dark spots
-    print("  - Adding pitting/pinholes...")
+    if verbose:
+        print("  - Adding pitting/pinholes...")
     img_array = apply_pitting_pinholes(img_array, density=pitting)
     
     # Step 7: Rough aggregate/embedded stones
-    print("  - Adding rough aggregate/embedded stones...")
-    img_array = apply_rough_aggregate(img_array, density=roughness)
+    if verbose:
+        print("  - Adding rough aggregate/embedded stones...")
+    img_array = apply_rough_aggregate(img_array, density=aggregate_density)
     
     # Step 8: Surface staining with HARD edges
-    print("  - Adding surface staining (hard edges)...")
-    img_array = apply_color_variation(img_array, patch_count=8, scale=0.008, intensity=15)
+    if verbose:
+        print("  - Adding surface staining (hard edges)...")
+    stain_intensity = int(15 * staining_intensity)
+    img_array = apply_color_variation(img_array, patch_count=8, scale=0.008, intensity=stain_intensity)
     
     # Step 9: Micro-cracks - jagged and meandering
-    print("  - Adding micro-cracks...")
+    if verbose:
+        print("  - Adding micro-cracks...")
     img_array = apply_cracks(img_array, density=cracks)
     
     # Step 10: Legacy pores (keeping for backwards compatibility)
-    print("  - Adding additional surface pores...")
+    if verbose:
+        print("  - Adding additional surface pores...")
     pore_count = int(200 * pitting)
-    img_array = apply_pores(img_array, count=pore_count, size_range=(1, 2))
+    pore_size = (int(1 * pitting_size), int(2 * pitting_size))
+    img_array = apply_pores(img_array, count=pore_count, size_range=pore_size)
     
     # Step 11: Dust haze (subtle)
-    print("  - Adding dust/efflorescence (subtle)...")
+    if verbose:
+        print("  - Adding dust/efflorescence (subtle)...")
     img_array = apply_dust_haze(img_array, patch_count=12, intensity=15)
     
     return Image.fromarray(img_array)

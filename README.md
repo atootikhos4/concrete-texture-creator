@@ -1,8 +1,30 @@
 # Concrete Texture Generator
 
-A Python-based procedural texture generator that creates realistic **spray-on concrete resurfacing** textures with natural imperfections. The color palette is inspired by real concrete samples from the reference images included in this repository.
+A Python-based procedural texture generator that creates realistic **spray-on concrete resurfacing** textures with natural imperfections. Features both a **GUI application** and **command-line interface**. The color palette is inspired by real concrete samples from the reference images included in this repository.
 
 ## Features
+
+### GUI Application (`concrete_texture_app.py`)
+
+The Tkinter-based GUI provides an interactive, real-time texture creation experience:
+
+- **Live Preview Canvas** — Real-time preview (512x512) that updates as you adjust parameters
+- **Color Picker** — Hex input field, color chooser dialog, and 12 preset color buttons
+- **Parameter Sliders** — Fine control over all texture parameters:
+  - Roughness / Grain Intensity
+  - Knockdown Splatter Intensity & Scale
+  - Pitting Density & Size
+  - Aggregate Density
+  - Crack Density
+  - Staining Intensity
+  - Noise Scale (fine to coarse)
+- **Style Presets** — Quick presets: Light Smooth, Heavy Knockdown, Rough Industrial, Weathered
+- **Export Functionality** — Save textures at any resolution (up to 8192x8192)
+- **Randomize & Reset** — Quickly explore variations or return to defaults
+
+### Texture Generation Engine
+
+### Texture Generation Engine
 
 This generator creates highly realistic spray-on concrete resurfacing textures by layering multiple effects:
 
@@ -44,6 +66,25 @@ pip install -r requirements.txt
 ```
 
 ## Usage
+
+### GUI Application (Recommended)
+
+Launch the interactive GUI application:
+
+```bash
+python concrete_texture_app.py
+```
+
+The GUI provides:
+1. **Color Selection** — Type hex codes, use the color chooser, or click preset color buttons (1-12)
+2. **Real-Time Preview** — See changes instantly as you adjust sliders
+3. **Parameter Control** — Sliders for all texture parameters with live updates
+4. **Style Presets** — One-click application of predefined concrete styles
+5. **Export** — Save at any resolution with custom width/height
+6. **Randomize** — Generate random variations for inspiration
+7. **Reset** — Return to default settings
+
+### Command-Line Interface
 
 The generator provides three ways to specify the concrete color:
 
@@ -187,12 +228,13 @@ See `requirements.txt` for specific versions.
 
 ```
 concrete-texture-creator/
-├── concrete_texture_generator.py  # Main texture generator script
+├── concrete_texture_generator.py  # Core texture generation engine (CLI)
+├── concrete_texture_app.py        # GUI application (Tkinter)
 ├── extract_colors.py              # Color extraction utility
 ├── requirements.txt               # Python dependencies
 ├── README.md                      # This file
-├── Picture1.png                   # Reference concrete sample
-├── Picture2.jpg                   # Reference concrete sample
+├── Picture1.png                   # Reference concrete sample (color)
+├── Picture2.jpg                   # Reference concrete sample (THE KEY REFERENCE)
 └── ye.pptx                        # PowerPoint with concrete samples
 ```
 
@@ -216,26 +258,55 @@ Each layer is implemented as a separate function, making it easy to adjust param
 
 ## Customization
 
-All texture parameters can be controlled via the main `generate_concrete_texture()` function or CLI arguments:
+### GUI Parameters
+
+The GUI provides sliders for all parameters:
+- **Roughness / Grain Intensity** (0.0-2.0) — Controls overall grittiness and grain intensity
+- **Knockdown Splatter Intensity** (0.0-1.0) — THE KEY LAYER intensity
+- **Knockdown Splatter Scale** (1.0-5.0) — Controls blur radius (fine to coarse)
+- **Pitting Density** (0.0-2.0) — Density of pinholes/air bubbles
+- **Pitting Size** (0.5-2.0) — Size multiplier for pinholes
+- **Aggregate Density** (0.0-2.0) — Density of visible sand grains/stones
+- **Crack Density** (0.0-2.0) — Micro-crack density
+- **Staining Intensity** (0.0-2.0) — Surface staining/water marks
+- **Noise Scale** (0.5-2.0) — Perlin noise scale (fine to coarse)
 
 ### CLI Parameters
+
+All texture parameters can be controlled via CLI arguments:
+
 - **`--roughness`** (0.0-2.0, default: 1.0) — Controls overall grittiness and grain intensity. Higher values create more aggressive stipple and more aggregate particles.
 - **`--pitting`** (0.0-2.0, default: 1.0) — Controls density of pinholes and surface pores. Higher values create more visible trapped air bubbles.
 - **`--cracks`** (0.0-2.0, default: 1.0) — Controls micro-crack density. Higher values add more hairline fractures.
 
 ### Function Parameters
 
-You can also modify parameters directly in the code:
+The `generate_concrete_texture()` function accepts all parameters programmatically:
 
-- **Multi-octave noise** — `apply_simplex_noise(scale=0.01, intensity=12)` — Two octaves for natural variation
-- **Knockdown splatter** — `apply_knockdown_splatter(intensity=0.8, blur_radius=2.5)` — THE KEY LAYER for spray texture
-- **Heavy stipple** — `apply_heavy_stipple(intensity=18 * roughness)` — Aggressive grain for harsh appearance
-- **Fine grain** — `apply_fine_grain(intensity=10 * roughness)` — Additional texture detail
-- **Pitting/pinholes** — `apply_pitting_pinholes(density=pitting)` — Visible dark spots
-- **Rough aggregate** — `apply_rough_aggregate(density=roughness)` — Sharp contrast particles
-- **Surface staining** — `apply_color_variation(intensity=15)` — Hard-edged darker patches
-- **Micro-cracks** — `apply_cracks(density=cracks)` — Jagged fracture lines
-- **Dust coverage** — `apply_dust_haze(patch_count=12, intensity=15)` — Subtle whitish overlay
+```python
+from concrete_texture_generator import generate_concrete_texture
+
+img = generate_concrete_texture(
+    base_color='#8c8680',
+    width=1024,
+    height=1024,
+    roughness=1.0,
+    pitting=1.0,
+    cracks=1.0,
+    knockdown_intensity=0.8,
+    knockdown_scale=2.5,
+    pitting_size=1.0,
+    aggregate_density=1.0,
+    staining_intensity=1.0,
+    noise_scale=1.0,
+    verbose=False  # Set to False for silent operation (useful in GUI)
+)
+img.save('my_texture.png')
+```
+
+### Individual Layer Functions
+
+Each texture layer is implemented as a separate function, making it easy to adjust or customize:
 
 ## License
 
