@@ -22,21 +22,20 @@ from opensimplex import OpenSimplex
 from scipy.ndimage import gaussian_filter
 
 
-# Concrete color presets extracted/inspired by reference images
-# Mix of extracted colors and realistic concrete tones
+# Concrete color presets - exact colors from requirements
 CONCRETE_PALETTE = {
-    1: {'name': 'Dark Gray', 'color': '#4e4e54'},
-    2: {'name': 'Medium Gray', 'color': '#54545c'},
-    3: {'name': 'Slate Gray', 'color': '#52525a'},
-    4: {'name': 'Charcoal', 'color': '#3e3c3f'},
-    5: {'name': 'Light Cement', 'color': '#b5a898'},
-    6: {'name': 'Classic Concrete', 'color': '#8c8680'},
-    7: {'name': 'Warm Beige', 'color': '#c4b5a0'},
-    8: {'name': 'Cool Gray', 'color': '#9b9b9b'},
-    9: {'name': 'Weathered Gray', 'color': '#a8a39e'},
-    10: {'name': 'Stone Gray', 'color': '#979288'},
-    11: {'name': 'Sandy Concrete', 'color': '#d4c8b8'},
-    12: {'name': 'Dusty Gray', 'color': '#b8b0a8'},
+    1: {'name': 'Light Grey', 'color': '#C8C4BC'},
+    2: {'name': 'Warm Grey', 'color': '#B5A898'},
+    3: {'name': 'Cool Grey', 'color': '#A8ACB0'},
+    4: {'name': 'Beige', 'color': '#D4CFC5'},
+    5: {'name': 'Medium Grey', 'color': '#8C8680'},
+    6: {'name': 'Dark Charcoal', 'color': '#5A5A5A'},
+    7: {'name': 'Cement Grey', 'color': '#9B9B9B'},
+    8: {'name': 'Stone Grey', 'color': '#7D7D7D'},
+    9: {'name': 'Warm Beige', 'color': '#BFB5A8'},
+    10: {'name': 'Dark Grey', 'color': '#6B6B6B'},
+    11: {'name': 'Light Cement', 'color': '#DCDCDC'},
+    12: {'name': 'Graphite', 'color': '#4A4A4A'},
 }
 
 
@@ -95,7 +94,7 @@ def apply_simplex_noise(img_array, scale=0.01, intensity=15, seed=None):
     return img_array
 
 
-def apply_fine_grain(img_array, intensity=8, seed=None):
+def apply_fine_grain(img_array, intensity=35, seed=None):
     """Apply fine grain/sand texture with high-frequency noise."""
     height, width = img_array.shape[:2]
     
@@ -112,7 +111,7 @@ def apply_fine_grain(img_array, intensity=8, seed=None):
     return result
 
 
-def apply_knockdown_splatter(img_array, intensity=0.7, blur_radius=2, seed=None):
+def apply_knockdown_splatter(img_array, intensity=0.9, blur_radius=3, seed=None):
     """
     Apply knockdown splatter pattern - THE KEY LAYER for spray-on concrete.
     Creates the characteristic spray-and-flatten pattern with hills and valleys.
@@ -126,7 +125,7 @@ def apply_knockdown_splatter(img_array, intensity=0.7, blur_radius=2, seed=None)
     splatter_noise = np.random.rand(height, width).astype(np.float32)
     
     # Threshold to create splatter droplets (only keep high values)
-    threshold = 0.65  # Adjust to control splatter density
+    threshold = 0.60  # Lower threshold = more splatter coverage
     splatter_mask = (splatter_noise > threshold).astype(np.float32)
     
     # Apply Gaussian blur to create the "knocked down" flattened mounds effect
@@ -139,13 +138,13 @@ def apply_knockdown_splatter(img_array, intensity=0.7, blur_radius=2, seed=None)
     # Apply splatter pattern to create hills (brighter) and valleys (darker)
     for c in range(3):
         # Create variation: some areas raised (lighter), some depressed (darker)
-        variation = (splatter_mask - 0.5) * intensity * 40  # Scale for visibility
+        variation = (splatter_mask - 0.5) * intensity * 50  # Scale for prominence
         img_array[:, :, c] = np.clip(img_array[:, :, c] + variation, 0, 255).astype(np.uint8)
     
     return img_array
 
 
-def apply_heavy_stipple(img_array, intensity=15, seed=None):
+def apply_heavy_stipple(img_array, intensity=40, seed=None):
     """
     Apply heavy stipple/grain - aggressive high-frequency per-pixel noise.
     NOT subtle - makes the surface look visibly gritty and sandy like concrete aggregate.
@@ -165,7 +164,7 @@ def apply_heavy_stipple(img_array, intensity=15, seed=None):
     return result
 
 
-def apply_speckles(img_array, count=500, min_size=1, max_size=4, seed=None):
+def apply_speckles(img_array, count=1200, min_size=1, max_size=4, seed=None):
     """Apply speckles and aggregate spots of varying sizes."""
     if seed is not None:
         random.seed(seed)
@@ -218,17 +217,42 @@ def apply_cracks(img_array, density=1.0, seed=None):
         length = random.randint(15, 60)  # Longer cracks
         angle = random.uniform(0, 360)
         
-        # Draw meandering crack - more jagged
+        # Draw meandering crack - MUCH more jagged
         points = [(x, y)]
         for i in range(length):
-            # More aggressive angle changes for jagged appearance
-            angle += random.uniform(-45, 45)  # Wider angle range
-            step_size = random.uniform(0.3, 1.5)
+            # LARGE angular variation for very jagged appearance
+            # Using ±80 degrees for highly jagged cracks
+            angle += random.uniform(-80, 80)  # Wide angle range
+            step_size = random.uniform(0.5, 2.0)  # More variable step sizes
             x += np.cos(np.radians(angle)) * step_size
             y += np.sin(np.radians(angle)) * step_size
             
             if 0 <= x < width and 0 <= y < height:
                 points.append((int(x), int(y)))
+            
+            # Occasionally branch into sub-cracks
+            if i > 5 and random.random() < 0.1:  # 10% chance to branch
+                # Create short sub-crack
+                branch_length = random.randint(3, 10)
+                branch_angle = angle + random.uniform(-90, 90)
+                branch_x, branch_y = x, y
+                # Clamp starting position to valid bounds
+                branch_x = max(0, min(width - 1, branch_x))
+                branch_y = max(0, min(height - 1, branch_y))
+                branch_points = [(int(branch_x), int(branch_y))]
+                
+                for _ in range(branch_length):
+                    branch_angle += random.uniform(-60, 60)
+                    branch_x += np.cos(np.radians(branch_angle)) * random.uniform(0.5, 1.5)
+                    branch_y += np.sin(np.radians(branch_angle)) * random.uniform(0.5, 1.5)
+                    
+                    if 0 <= branch_x < width and 0 <= branch_y < height:
+                        branch_points.append((int(branch_x), int(branch_y)))
+                
+                if len(branch_points) > 1:
+                    base_color_branch = img_array[int(branch_points[0][1]), int(branch_points[0][0])]
+                    crack_color_branch = tuple(int(c * 0.6) for c in base_color_branch)
+                    draw.line(branch_points, fill=crack_color_branch, width=1)
         
         if len(points) > 1:
             # Draw crack as darker line
@@ -239,7 +263,7 @@ def apply_cracks(img_array, density=1.0, seed=None):
     return np.array(img)
 
 
-def apply_pores(img_array, count=300, size_range=(1, 2), seed=None):
+def apply_pores(img_array, count=800, size_range=(1, 3), seed=None):
     """Apply surface pores and pinholes."""
     if seed is not None:
         random.seed(seed)
@@ -253,9 +277,9 @@ def apply_pores(img_array, count=300, size_range=(1, 2), seed=None):
         y = random.randint(0, height - 1)
         size = random.randint(size_range[0], size_range[1])
         
-        # Dark pore color
+        # Dark pore color - more prominent
         base_color = img_array[y, x]
-        pore_color = tuple(int(c * 0.5) for c in base_color)
+        pore_color = tuple(int(c * 0.4) for c in base_color)  # Darker for visibility
         
         draw.ellipse([x - size//2, y - size//2, x + size//2, y + size//2], 
                      fill=pore_color)
@@ -275,8 +299,8 @@ def apply_pitting_pinholes(img_array, density=1.0, seed=None):
     draw = ImageDraw.Draw(img)
     height, width = img_array.shape[:2]
     
-    # Calculate count based on density and image size
-    base_count = int((width * height) / 1000 * density)
+    # Calculate count based on density and image size - increased significantly
+    base_count = int((width * height) / 600 * density)  # Changed from 1000 to 600 for more pinholes
     
     for _ in range(base_count):
         x = random.randint(0, width - 1)
@@ -417,7 +441,7 @@ def apply_dust_haze(img_array, patch_count=15, intensity=20, seed=None):
 
 def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0, 
                             pitting=1.0, cracks=1.0, seed=None,
-                            knockdown_intensity=0.8, knockdown_scale=2.5,
+                            knockdown_intensity=0.9, knockdown_scale=3.0,
                             pitting_size=1.0, aggregate_density=1.0,
                             staining_intensity=1.0, noise_scale=1.0, verbose=True):
     """
@@ -431,8 +455,8 @@ def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0
         pitting: Density of pinholes (0.0-2.0, default 1.0)
         cracks: Micro-crack density (0.0-2.0, default 1.0)
         seed: Random seed for reproducibility
-        knockdown_intensity: Knockdown splatter intensity (0.0-1.0, default 0.8)
-        knockdown_scale: Knockdown splatter scale/blur (1.0-5.0, default 2.5)
+        knockdown_intensity: Knockdown splatter intensity (0.0-1.0, default 0.9)
+        knockdown_scale: Knockdown splatter scale/blur (1.0-5.0, default 3.0)
         pitting_size: Size multiplier for pitting (0.5-2.0, default 1.0)
         aggregate_density: Density of aggregate particles (0.0-2.0, default 1.0)
         staining_intensity: Intensity of surface staining (0.0-2.0, default 1.0)
@@ -473,13 +497,13 @@ def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0
     # Step 4: Heavy stipple/grain - make it HARSH and GRITTY
     if verbose:
         print("  - Adding heavy stipple/grain texture...")
-    stipple_intensity = int(18 * roughness)  # Scale by roughness parameter
+    stipple_intensity = int(35 * roughness)  # Scale by roughness parameter
     img_array = apply_heavy_stipple(img_array, intensity=stipple_intensity)
     
     # Step 5: Fine grain (additional layer for more texture)
     if verbose:
         print("  - Adding fine grain layer...")
-    fine_intensity = int(10 * roughness)
+    fine_intensity = int(25 * roughness)
     img_array = apply_fine_grain(img_array, intensity=fine_intensity)
     
     # Step 6: Pitting/pinholes - clearly visible dark spots
@@ -506,8 +530,8 @@ def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0
     # Step 10: Legacy pores (keeping for backwards compatibility)
     if verbose:
         print("  - Adding additional surface pores...")
-    pore_count = int(200 * pitting)
-    pore_size = (int(1 * pitting_size), int(2 * pitting_size))
+    pore_count = int(600 * pitting)
+    pore_size = (int(1 * pitting_size), int(3 * pitting_size))
     img_array = apply_pores(img_array, count=pore_count, size_range=pore_size)
     
     # Step 11: Dust haze (subtle)
@@ -560,6 +584,8 @@ Examples:
     # Texture parameters
     parser.add_argument('--roughness', type=float, default=1.0,
                        help='Overall grittiness/grain intensity (0.0-2.0, default: 1.0)')
+    parser.add_argument('--splatter', type=float, default=0.9,
+                       help='Knockdown splatter intensity (0.0-1.0, default: 0.9)')
     parser.add_argument('--pitting', type=float, default=1.0,
                        help='Density of pinholes (0.0-2.0, default: 1.0)')
     parser.add_argument('--cracks', type=float, default=1.0,
@@ -579,6 +605,10 @@ Examples:
     if not (0.0 <= args.roughness <= 2.0):
         print("Warning: roughness should be between 0.0 and 2.0, clamping...")
         args.roughness = max(0.0, min(2.0, args.roughness))
+    
+    if not (0.0 <= args.splatter <= 1.0):
+        print("Warning: splatter should be between 0.0 and 1.0, clamping...")
+        args.splatter = max(0.0, min(1.0, args.splatter))
     
     if not (0.0 <= args.pitting <= 2.0):
         print("Warning: pitting should be between 0.0 and 2.0, clamping...")
@@ -614,9 +644,9 @@ Examples:
     elif args.color:
         base_color = args.color
     else:
-        # Default to preset 6 (Classic Concrete)
-        base_color = CONCRETE_PALETTE[6]['color']
-        print(f"\nUsing default: {CONCRETE_PALETTE[6]['name']} ({base_color})\n")
+        # Default to preset 5 (Medium Grey)
+        base_color = CONCRETE_PALETTE[5]['color']
+        print(f"\nUsing default: {CONCRETE_PALETTE[5]['name']} ({base_color})\n")
     
     # Generate texture
     try:
@@ -627,6 +657,7 @@ Examples:
             roughness=args.roughness,
             pitting=args.pitting,
             cracks=args.cracks,
+            knockdown_intensity=args.splatter,
             seed=args.seed
         )
         
@@ -635,7 +666,7 @@ Examples:
         print(f"\n✓ Texture saved to: {args.output}")
         print(f"  Size: {args.width}x{args.height} pixels")
         print(f"  Base color: {base_color}")
-        print(f"  Roughness: {args.roughness:.1f}, Pitting: {args.pitting:.1f}, Cracks: {args.cracks:.1f}")
+        print(f"  Roughness: {args.roughness:.1f}, Splatter: {args.splatter:.1f}, Pitting: {args.pitting:.1f}, Cracks: {args.cracks:.1f}")
         
         return 0
     except Exception as e:
