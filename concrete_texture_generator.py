@@ -125,7 +125,7 @@ def apply_knockdown_splatter(img_array, intensity=0.9, blur_radius=3, seed=None)
     splatter_noise = np.random.rand(height, width).astype(np.float32)
     
     # Threshold to create splatter droplets (only keep high values)
-    threshold = 0.60  # Lower threshold = more splatter coverage (changed from 0.65)
+    threshold = 0.60  # Lower threshold = more splatter coverage
     splatter_mask = (splatter_noise > threshold).astype(np.float32)
     
     # Apply Gaussian blur to create the "knocked down" flattened mounds effect
@@ -138,7 +138,7 @@ def apply_knockdown_splatter(img_array, intensity=0.9, blur_radius=3, seed=None)
     # Apply splatter pattern to create hills (brighter) and valleys (darker)
     for c in range(3):
         # Create variation: some areas raised (lighter), some depressed (darker)
-        variation = (splatter_mask - 0.5) * intensity * 50  # Increased from 40 to 50 for MORE prominence
+        variation = (splatter_mask - 0.5) * intensity * 50  # Scale for prominence
         img_array[:, :, c] = np.clip(img_array[:, :, c] + variation, 0, 255).astype(np.uint8)
     
     return img_array
@@ -220,9 +220,9 @@ def apply_cracks(img_array, density=1.0, seed=None):
         # Draw meandering crack - MUCH more jagged
         points = [(x, y)]
         for i in range(length):
-            # LARGE angular variation for very jagged appearance (±0.5-0.8 radians = ±29-46 degrees)
-            # Let's use ±60-90 degrees for even MORE jagged cracks
-            angle += random.uniform(-80, 80)  # Much wider angle range
+            # LARGE angular variation for very jagged appearance
+            # Using ±80 degrees for highly jagged cracks
+            angle += random.uniform(-80, 80)  # Wide angle range
             step_size = random.uniform(0.5, 2.0)  # More variable step sizes
             x += np.cos(np.radians(angle)) * step_size
             y += np.sin(np.radians(angle)) * step_size
@@ -497,13 +497,13 @@ def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0
     # Step 4: Heavy stipple/grain - make it HARSH and GRITTY
     if verbose:
         print("  - Adding heavy stipple/grain texture...")
-    stipple_intensity = int(35 * roughness)  # Scale by roughness parameter - much more aggressive
+    stipple_intensity = int(35 * roughness)  # Scale by roughness parameter
     img_array = apply_heavy_stipple(img_array, intensity=stipple_intensity)
     
     # Step 5: Fine grain (additional layer for more texture)
     if verbose:
         print("  - Adding fine grain layer...")
-    fine_intensity = int(25 * roughness)  # Increased from 10 to 25
+    fine_intensity = int(25 * roughness)
     img_array = apply_fine_grain(img_array, intensity=fine_intensity)
     
     # Step 6: Pitting/pinholes - clearly visible dark spots
@@ -530,8 +530,8 @@ def generate_concrete_texture(base_color, width=1024, height=1024, roughness=1.0
     # Step 10: Legacy pores (keeping for backwards compatibility)
     if verbose:
         print("  - Adding additional surface pores...")
-    pore_count = int(600 * pitting)  # Increased from 200
-    pore_size = (int(1 * pitting_size), int(3 * pitting_size))  # Increased max from 2 to 3
+    pore_count = int(600 * pitting)
+    pore_size = (int(1 * pitting_size), int(3 * pitting_size))
     img_array = apply_pores(img_array, count=pore_count, size_range=pore_size)
     
     # Step 11: Dust haze (subtle)
